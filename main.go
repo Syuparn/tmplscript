@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"reflect"
 	"strings"
 	"text/template"
 
@@ -128,6 +129,28 @@ func searchFunc(funcMap template.FuncMap) func(string) []string {
 func docFunc(funcMap template.FuncMap) func(string) string {
 	// TODO: impl
 	return func(name string) string {
-		return fmt.Sprintf("function %s is not defined (or embedded)", name)
+		f, ok := funcMap[name]
+		if !ok {
+			return fmt.Sprintf("function %s is not defined (or embedded)", name)
+		}
+
+		rt := reflect.TypeOf(f)
+		if rt.Kind() != reflect.Func {
+			return fmt.Sprintf("%s is not a function", name)
+		}
+
+		paramTypes := []string{}
+		for i := 0; i < rt.NumIn(); i++ {
+			paramTypes = append(paramTypes, rt.In(i).String())
+		}
+
+		returnTypes := []string{}
+		for i := 0; i < rt.NumOut(); i++ {
+			returnTypes = append(returnTypes, rt.Out(i).String())
+		}
+
+		paramList := strings.Join(paramTypes, " ")
+		returnList := strings.Join(returnTypes, " ")
+		return fmt.Sprintf("%s %s -> (%s)", name, paramList, returnList)
 	}
 }
