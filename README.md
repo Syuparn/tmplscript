@@ -9,6 +9,19 @@ $ echo "hello" | tmplscript '{{print . ", " "world!"}}'
 hello, world!
 ```
 
+REPL mode
+
+```bash
+$ tmplscript -i
+tmpl:1> {{add 2 3}}
+5
+tmpl:2> {{$i := "Hello"}}
+
+tmpl:3> {{print $i ", world!"}}
+Hello, world!
+tmpl:4> ^C
+```
+
 # functions
 
 Functions in [Sprig](http://masterminds.github.io/sprig/) can be used.
