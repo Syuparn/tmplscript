@@ -6,6 +6,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"reflect"
+	"strings"
 	"text/template"
 
 	"github.com/Masterminds/sprig"
@@ -32,8 +34,7 @@ func main() {
 }
 
 func runPipeMode(tmplStr string) {
-	// NOTE: FuncMap is for html/template, TxtFuncMap is for text/template
-	tmpl, err := template.New("tmpl").Funcs(sprig.TxtFuncMap()).Parse(tmplStr)
+	tmpl, err := template.New("tmpl").Funcs(funcMap()).Parse(tmplStr)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "template error:\n%v\n", err)
 		return
@@ -52,7 +53,7 @@ func runPipeMode(tmplStr string) {
 }
 
 func runREPLMode() {
-	tmplGen := template.New("tmpl").Funcs(sprig.TxtFuncMap())
+	tmplGen := template.New("tmpl").Funcs(funcMap())
 	scanner := bufio.NewScanner(os.Stdin)
 	tmplStr := ""
 	lineNum := 1
@@ -99,5 +100,57 @@ func lastLine(out *bytes.Buffer) string {
 			return last
 		}
 		last = line
+	}
+}
+
+func funcMap() template.FuncMap {
+	// NOTE: FuncMap is for html/template, TxtFuncMap is for text/template
+	funcMap := sprig.TxtFuncMap()
+
+	// add (meta-)functions to describe functions
+	funcMap["searchFunc"] = searchFunc(funcMap)
+	funcMap["docFunc"] = docFunc(funcMap)
+	return funcMap
+}
+
+func searchFunc(funcMap template.FuncMap) func(string) []string {
+	return func(prefix string) []string {
+		keys := []string{}
+		for k := range funcMap {
+			if strings.HasPrefix(k, prefix) {
+				keys = append(keys, k)
+			}
+		}
+
+		return keys
+	}
+}
+
+func docFunc(funcMap template.FuncMap) func(string) string {
+	// TODO: impl
+	return func(name string) string {
+		f, ok := funcMap[name]
+		if !ok {
+			return fmt.Sprintf("function %s is not defined (or embedded)", name)
+		}
+
+		rt := reflect.TypeOf(f)
+		if rt.Kind() != reflect.Func {
+			return fmt.Sprintf("%s is not a function", name)
+		}
+
+		paramTypes := []string{}
+		for i := 0; i < rt.NumIn(); i++ {
+			paramTypes = append(paramTypes, rt.In(i).String())
+		}
+
+		returnTypes := []string{}
+		for i := 0; i < rt.NumOut(); i++ {
+			returnTypes = append(returnTypes, rt.Out(i).String())
+		}
+
+		paramList := strings.Join(paramTypes, " ")
+		returnList := strings.Join(returnTypes, " ")
+		return fmt.Sprintf("%s %s -> (%s)", name, paramList, returnList)
 	}
 }
