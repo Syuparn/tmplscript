@@ -136,9 +136,13 @@ func docFunc(funcMap template.FuncMap) func(string) string {
 		}
 
 		paramTypes := []string{}
-		// TODO: check varargs
 		for i := 0; i < rt.NumIn(); i++ {
 			paramTypes = append(paramTypes, rt.In(i).String())
+		}
+
+		// add `...` to variadic parameter
+		if rt.IsVariadic() {
+			paramTypes[len(paramTypes)-1] = "..." + paramTypes[len(paramTypes)-1]
 		}
 
 		returnTypes := []string{}
