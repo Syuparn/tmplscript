@@ -57,6 +57,9 @@ func runREPLMode() {
 	scanner := bufio.NewScanner(os.Stdin)
 	tmplStr := ""
 	lineNum := 1
+	// NOTE: save previous output of template
+	// to print only added output, which corresponds to the latest input
+	previousOutStr := ""
 
 	for {
 		// show prompt
@@ -82,25 +85,19 @@ func runREPLMode() {
 			fmt.Fprintf(os.Stderr, "runtime error:\n%v\n", err)
 			continue
 		}
-		// print only last line, which corresponds to the latest input
+		// print only added output, which corresponds to the latest input
 		// NOTE: break line is unneccessary because it already exists
-		fmt.Print(lastLine(out))
+		outStr := out.String()
+		fmt.Print(diffStr(outStr, previousOutStr))
 
 		tmplStr = tmplStr + line
+		previousOutStr = outStr
 		lineNum++
 	}
 }
 
-func lastLine(out *bytes.Buffer) string {
-	last := ""
-
-	for {
-		line, err := out.ReadString('\n')
-		if err != nil {
-			return last
-		}
-		last = line
-	}
+func diffStr(newStr, previousStr string) string {
+	return newStr[len(previousStr):]
 }
 
 func funcMap() template.FuncMap {
@@ -127,7 +124,6 @@ func searchFunc(funcMap template.FuncMap) func(string) []string {
 }
 
 func docFunc(funcMap template.FuncMap) func(string) string {
-	// TODO: impl
 	return func(name string) string {
 		f, ok := funcMap[name]
 		if !ok {
@@ -140,6 +136,7 @@ func docFunc(funcMap template.FuncMap) func(string) string {
 		}
 
 		paramTypes := []string{}
+		// TODO: check varargs
 		for i := 0; i < rt.NumIn(); i++ {
 			paramTypes = append(paramTypes, rt.In(i).String())
 		}
