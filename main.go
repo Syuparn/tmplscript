@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"reflect"
 	"strings"
@@ -14,6 +15,7 @@ import (
 )
 
 var (
+	fileName = flag.String("f", "", "use template file")
 	runsREPL = flag.Bool("i", false, "run interactive REPL instead")
 )
 
@@ -22,6 +24,22 @@ func main() {
 
 	if *runsREPL {
 		runREPLMode()
+		return
+	}
+
+	if *fileName != "" {
+		fp, err := os.Open(*fileName)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "failed to open %s: %v\n", *fileName, err)
+			return
+		}
+
+		b, err := ioutil.ReadAll(fp)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "failed to read %s: %v\n", *fileName, err)
+		}
+
+		runPipeMode(string(b))
 		return
 	}
 
