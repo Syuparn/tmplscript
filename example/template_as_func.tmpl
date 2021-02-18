@@ -1,0 +1,9 @@
+{{- define "templateAdd" -}}
+    {{- /* HACK: assign dummy var to be evaluated as "" */ -}}
+    {{- $_ := set . "ret" (add (index .args 0) (index .args 1)) -}}
+{{- end -}}
+
+{{- with $d := dict "args" (list 2 3) -}}
+    {{- template "templateAdd" $d -}}
+    {{- print "result: " $d.ret -}}
+{{- end -}}

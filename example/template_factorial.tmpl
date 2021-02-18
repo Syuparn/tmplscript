@@ -1,0 +1,32 @@
+{{- define "_fact" -}}
+    {{- $i := index . 0 -}}
+    {{- $acc := index . 1 -}}
+    {{- if le $i 1 -}}
+        {{- println $acc -}}
+    {{- else -}}
+        {{- template "_fact" list (sub $i 1) (mul $acc $i) -}}
+    {{- end -}}
+{{- end -}}
+
+{{- define "fact" -}}
+    {{- template "_fact" list . 1 -}}
+{{- end -}}
+
+
+{{- range $i := until 11}}
+    {{- printf "%2d! = " $i}}{{template "fact" $i}}
+{{- end}}
+
+{{- /*
+ 0! = 1
+ 1! = 1
+ 2! = 2
+ 3! = 6
+ 4! = 24
+ 5! = 120
+ 6! = 720
+ 7! = 5040
+ 8! = 40320
+ 9! = 362880
+10! = 3628800
+*/ -}}

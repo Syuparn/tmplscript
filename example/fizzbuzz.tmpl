@@ -1,0 +1,5 @@
+{{- with $i := int . -}}
+    {{- $fizz := mod $i 3 | eq 0 | ternary "fizz" "" -}}
+    {{- $buzz := mod $i 5 | eq 0 | ternary "buzz" "" -}}
+    {{- coalesce (print $fizz $buzz) $i -}}{{- "\n" -}}
+{{- end -}}

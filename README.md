@@ -7,6 +7,12 @@ executable go-template command (like awk and jq!)
 $ go get -u github.com/syuparn/tmplscript
 $ echo "hello" | tmplscript '{{print . ", " "world!"}}'
 hello, world!
+# read from file instead
+$ seq 15 | tmplscript -f example/fizzbuzz.tmpl
+1
+2
+fizz
+...
 ```
 
 REPL mode
