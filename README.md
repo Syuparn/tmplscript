@@ -1,4 +1,6 @@
 # tmplscript
+![](https://github.com/Syuparn/tmplscript/workflows/GoTest/badge.svg?branch=master)
+
 executable go-template command (like awk and jq!)
 
 # usage
