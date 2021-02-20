@@ -1,5 +1,5 @@
 # tmplscript
-![](https://github.com/Syuparn/tmplscript/workflows/GoTest/badge.svg?branch=master)
+[![GoTest](https://github.com/Syuparn/tmplscript/actions/workflows/test.yml/badge.svg)](https://github.com/Syuparn/tmplscript/actions/workflows/test.yml)
 
 executable go-template command (like awk and jq!)
 
