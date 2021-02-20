@@ -1,0 +1,30 @@
+{{- $base32Encode := "0123456789ABCDEFGHJKMNPQRSTVWXYZ" | splitList "" -}}
+
+{{- /* ULID variable, which is created below */ -}}
+{{- $ulid := "" -}}
+
+{{- /* encode timestamp (48bits, 10characters) */ -}}
+{{- with $now := now -}}
+    {{- $seconds := $now | unixEpoch | atoi -}}
+    {{- $milliseconds := $now | date ".000" | trimPrefix "." | atoi -}}
+    {{- $nowInt := add (mul $seconds 1000) $milliseconds -}}
+    {{- $timestampChars := list -}}
+    {{- range until 10 -}}
+        {{- $c := index $base32Encode (mod $nowInt 32) -}}
+        {{- $timestampChars = append $timestampChars $c -}}
+        {{- $nowInt = div $nowInt 32 -}}
+    {{- end -}}
+    {{- $timestamp := $timestampChars | reverse | join "" -}}
+    {{- $ulid = $timestamp -}}
+{{- end -}}
+
+{{- /* encode randomness (80bits, 16characters) */ -}}
+{{- /* NOTE: "with" cannot be used for $randomStr because it is falsy */ -}}
+{{- $randomStr := "" -}}
+{{- range until 16 -}}
+    {{- $c := index $base32Encode (randInt 0 32) -}}
+    {{- $randomStr = print $randomStr $c -}}
+{{- end -}}
+{{- $ulid = print $ulid $randomStr -}}
+
+{{- $ulid -}}
