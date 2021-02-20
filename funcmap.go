@@ -7,7 +7,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/Masterminds/sprig"
+	sprig "github.com/Masterminds/sprig/v3"
 )
 
 func funcMap() template.FuncMap {

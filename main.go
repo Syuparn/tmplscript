@@ -11,15 +11,19 @@ import (
 )
 
 var (
-	fileName = flag.String("f", "", "use template file")
-	runsREPL = flag.Bool("i", false, "run interactive REPL instead")
+	fileName   = flag.String("f", "", "use template file")
+	runsREPL   = flag.Bool("i", false, "run interactive REPL instead")
+	leftDelim  = flag.String("ldelim", "{{", "specify left deliminater")
+	rightDelim = flag.String("rdelim", "}}", "specify right deliminater")
 )
 
 func main() {
 	flag.Parse()
 
+	tmpl := newTemplate(*leftDelim, *rightDelim)
+
 	if *runsREPL {
-		runREPLMode()
+		runREPLMode(tmpl)
 		return
 	}
 
@@ -35,7 +39,7 @@ func main() {
 			fmt.Fprintf(os.Stderr, "failed to read %s: %v\n", *fileName, err)
 		}
 
-		runPipeMode(string(b))
+		runPipeMode(tmpl, string(b))
 		return
 	}
 
@@ -44,11 +48,11 @@ func main() {
 		return
 	}
 
-	runPipeMode(flag.Arg(0))
+	runPipeMode(tmpl, flag.Arg(0))
 }
 
-func runPipeMode(tmplStr string) {
-	tmpl, err := template.New("tmpl").Funcs(funcMap()).Parse(tmplStr)
+func runPipeMode(tmplGen *template.Template, tmplStr string) {
+	tmpl, err := tmplGen.Parse(tmplStr)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "template error:\n%v\n", err)
 		return
@@ -66,8 +70,7 @@ func runPipeMode(tmplStr string) {
 	}
 }
 
-func runREPLMode() {
-	tmplGen := template.New("tmpl").Funcs(funcMap())
+func runREPLMode(tmplGen *template.Template) {
 	scanner := bufio.NewScanner(os.Stdin)
 	tmplStr := ""
 	lineNum := 1
@@ -112,4 +115,8 @@ func runREPLMode() {
 
 func diffStr(newStr, previousStr string) string {
 	return newStr[len(previousStr):]
+}
+
+func newTemplate(leftDelim, rightDelim string) *template.Template {
+	return template.New("tmpl").Delims(leftDelim, rightDelim).Funcs(funcMap())
 }

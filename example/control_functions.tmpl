@@ -1,0 +1,13 @@
+{{- /* if expression: ternary */ -}}
+{{- /* NOTE: unlike if statement, non-bool cannot be used for cond */ -}}
+{{- (gt 2 1) | ternary "larger" "not large enough" | println}}
+
+{{- /* default value to avoid nil pointer dereference: or, coalesce, default */ -}}
+{{- $dict := dict "a" 1 "b" (dict "c" 2) -}}
+{{- or $dict.c $dict.a | println}}
+{{- coalesce $dict.c $dict.a | println}}
+{{- default "no value found" $dict.c | println}}
+{{- default "no value found" $dict.c | println}}
+
+{{- /* raise exception: fail */ -}}
+{{- /* fail "exception raised!" */ -}}
