@@ -1,0 +1,3 @@
+{{- $code := `{{- $code := @ -}}
+{{- $code | replace (printf "%c" 64) (print "\u0060" $code "\u0060") | println -}}` -}}
+{{- $code | replace (printf "%c" 64) (print "\u0060" $code "\u0060") | println -}}
