@@ -74,9 +74,8 @@ func runREPLMode(tmplGen *template.Template) {
 	scanner := bufio.NewScanner(os.Stdin)
 	tmplStr := ""
 	lineNum := 1
-	// NOTE: save previous output of template
-	// to print only added output, which corresponds to the latest input
-	previousOutStr := ""
+	// NOTE: save previous output length to print only diff added by the latest input
+	previousOutLen := 0
 
 	for {
 		// show prompt
@@ -105,16 +104,13 @@ func runREPLMode(tmplGen *template.Template) {
 		// print only added output, which corresponds to the latest input
 		// NOTE: break line is unneccessary because it already exists
 		outStr := out.String()
-		fmt.Print(diffStr(outStr, previousOutStr))
+		diffStr := outStr[previousOutLen:]
+		fmt.Print(diffStr)
 
 		tmplStr = tmplStr + line
-		previousOutStr = outStr
+		previousOutLen = len(outStr)
 		lineNum++
 	}
-}
-
-func diffStr(newStr, previousStr string) string {
-	return newStr[len(previousStr):]
 }
 
 func newTemplate(leftDelim, rightDelim string) *template.Template {
