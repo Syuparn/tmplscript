@@ -3,6 +3,16 @@
 
 executable go-template command (like awk and jq!)
 
+# install
+
+Get binary [here](https://github.com/Syuparn/tmplscript/releases).
+
+You can also install from `go get`.
+
+```bash
+$ go get -u github.com/syuparn/tmplscript
+```
+
 # usage
 
 ```bash
