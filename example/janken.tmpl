@@ -1,0 +1,25 @@
+{{- /* Janken (Rock-Paper-Scissors) game */ -}}
+{{- /* input your hand to stdin! */ -}}
+
+{{- /* gu, rock: ✊ */ -}}
+{{- /* choki, scissors: ✌ */ -}}
+{{- /* pa, paper: 🖐 */ -}}
+
+{{- /* constants */ -}}
+{{- $HandDict := dict "gu" 0 "choki" 1 "pa" 2 "rock" 0 "scissors" 1 "paper" 2 -}}
+{{- $HandIcons := list "✊" "✌" "🖐" -}}
+
+{{- if not (keys $HandDict | has .) -}}
+    {{- fail (printf "%s cannot be used as a hand!" .) -}}
+{{- end -}}
+
+{{- $playerHand := index $HandDict .}}
+{{- $comHand := randInt 0 3 -}}
+
+{{- /* show result */ -}}
+{{- println "You\t\tChallenger" -}}
+{{- printf "%s\tVS\t%s\n" (index $HandIcons $playerHand) (index $HandIcons $comHand)}}
+
+{{- $result := mod (add (sub $playerHand $comHand) 3) 3 -}}
+{{- $resultStrs := list "Draw." "You lost..." "You won!" -}}
+{{- printf "\n%s\n" (index $resultStrs $result) -}}

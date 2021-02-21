@@ -1,0 +1,5 @@
+{{- $n := 1 -}}
+{{- $code := `{{- $n := ${n} -}}
+{{- $code := @ -}}
+{{- $code | replace (print "${" "n" "}") (add1 $n | toString) | replace (printf "%c" 64) (print "\u0060" $code "\u0060") | println -}}` -}}
+{{- $code | replace (print "${" "n" "}") (add1 $n | toString) | replace (printf "%c" 64) (print "\u0060" $code "\u0060") | println -}}
