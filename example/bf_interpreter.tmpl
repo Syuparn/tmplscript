@@ -1,0 +1,168 @@
+{{- define "_bf" -}}
+    {{- if ge .tokPos (len .src) -}}
+        {{- /* parse ends. do nothing more */ -}}
+    {{- else -}}
+        {{- template "_bfParse" $ -}}
+    {{- end -}}
+{{- end -}}
+
+{{- define "_bfParse" -}}
+    {{- $tok := index .src .tokPos -}}
+    {{- if eq $tok '+' -}}
+        {{- template "_bfPlus" $ -}}
+        {{- template "_bf" $ -}}
+    {{- else if eq $tok '-' -}}
+        {{- template "_bfMinus" $ -}}
+        {{- template "_bf" $ -}}
+    {{- else if eq $tok '>' -}}
+        {{- template "_bfInc" $ -}}
+        {{- template "_bf" $ -}}
+    {{- else if eq $tok '<' -}}
+        {{- template "_bfDec" $ -}}
+        {{- template "_bf" $ -}}
+    {{- else if eq $tok ',' -}}
+        {{- template "_bfGet" $ -}}
+        {{- template "_bf" $ -}}
+    {{- else if eq $tok '.' -}}
+        {{- template "_bfPut" $ -}}
+        {{- template "_bf" $ -}}
+    {{- else if eq $tok '[' -}}
+        {{- template "_bfWhile" $ -}}
+        {{- template "_bf" $ -}}
+    {{- else if eq $tok ']' -}}
+        {{- template "_bfEnd" $ -}}
+        {{- template "_bf" $ -}}
+    {{- else -}}
+        {{- /* do nothing and parse next token */ -}}
+        {{- $_ := set $ "tokPos" (add1 .tokPos) -}}
+        {{- template "_bf" $ -}}
+    {{- end -}}
+{{- end -}}
+
+{{- define "_bfPlus" -}}
+    {{- $_ := set .mem (toString .ptr) (mod (add1 (get .mem (toString .ptr))) 256) -}}
+    {{- $_ = set $ "tokPos" (add1 .tokPos) -}}
+{{- end -}}
+
+{{- define "_bfMinus" -}}
+    {{- /* NOTE: mod cannot be used because mod of minus value is minus! */ -}}
+    {{- $v := sub (get .mem (toString .ptr)) 1 -}}
+    {{- $_ := set .mem (toString .ptr) ((ge $v 0) | ternary $v (add $v 256)) -}}
+    {{- $_ = set $ "tokPos" (add1 .tokPos) -}}
+{{- end -}}
+
+{{- define "_bfInc" -}}
+    {{- $_ := set $ "ptr" (add1 .ptr) -}}
+    {{- $_ = set $ "tokPos" (add1 .tokPos) -}}
+{{- end -}}
+
+{{- define "_bfDec" -}}
+    {{- $_ := set $ "ptr" (sub .ptr 1) -}}
+    {{- $_ = set $ "tokPos" (add1 .tokPos) -}}
+{{- end -}}
+
+{{- define "_bfGet" -}}
+    {{- $got := (ge (len .in) 0) | ternary (index .in 0) "" -}}
+    {{- $_ := set .mem (toString .ptr) $got -}}
+    {{- $_ = set $ "in" (.in | substr 1 (len .in)) -}}
+    {{- $_ = set $ "tokPos" (add1 .tokPos) -}}
+{{- end -}}
+
+{{- define "_bfPut" -}}
+    {{- printf "%c" (index .mem (toString .ptr)) -}}
+    {{- $_ := set $ "tokPos" (add1 .tokPos) -}}
+{{- end -}}
+
+{{- define "_bfWhile" -}}
+    {{- if (index .mem (toString .ptr)) -}}
+        {{- $_ := set $ "tokPos" (add1 .tokPos) -}}
+    {{- else -}}
+        {{- /* preceed position to corresponding "]" */ -}}
+
+        {{- $nestCnt := 1 -}}
+        {{- /* token position to jump */ -}}
+        {{- $pos := 0 -}}
+        {{- range $i := untilStep (add1 .tokPos | int) (len .src) 1 -}}
+            {{- if eq (index $.src $i) '[' -}}
+                {{- $nestCnt = add1 $nestCnt -}}
+            {{- else if eq (index $.src $i) ']' -}}
+                {{- $nestCnt = sub $nestCnt 1 -}}
+            {{- end -}}
+
+            {{- /* set position just after first corresponding "]" */ -}}
+            {{- if and (not $pos) (eq $nestCnt 0) -}}
+                {{- $pos = add1 $i -}}
+            {{- end -}}
+        {{- end -}}
+
+        {{- $_ := set $ "tokPos" (default $pos (len .src)) -}}
+    {{- end -}}
+{{- end -}}
+
+{{- define "_bfEnd" -}}
+    {{- if not (index .mem (toString .ptr)) -}}
+        {{- $_ := set $ "tokPos" (add1 .tokPos) -}}
+    {{- else -}}
+        {{- /* get position back to corresponding "[" */ -}}
+
+        {{- $nestCnt := 1 -}}
+        {{- /* token position to jump */ -}}
+        {{- $pos := -1 -}}
+        {{- range $i := untilStep (sub .tokPos 1 | int) -1 -1 -}}
+            {{- if eq (index $.src $i) ']' -}}
+                {{- $nestCnt = add1 $nestCnt -}}
+            {{- else if eq (index $.src $i) '[' -}}
+                {{- $nestCnt = sub $nestCnt 1 -}}
+            {{- end -}}
+
+            {{- /* set position just after the last corresponding "[" */ -}}
+            {{- if and (eq $pos -1) (eq $nestCnt 0) -}}
+                {{- $pos = add1 $i -}}
+            {{- end -}}
+        {{- end -}}
+
+        {{- $_ := set $ "tokPos" $pos -}}
+    {{- end -}}
+{{- end -}}
+
+{{- /* only for debugging */ -}}
+{{- define "_bfDump" -}}
+    {{- println "in: " .in -}}
+    {{- println "src: " .src -}}
+    {{- println "ptr: " .ptr -}}
+    {{- println "tokPos: " .tokPos -}}
+    {{- range $i := until (len .mem) -}}
+        {{- printf "%3d " (index $.mem (toString $i)) -}}
+        {{- if eq (mod $i 16) 15 -}}
+            {{- println -}}
+        {{- end -}}
+    {{- end -}}
+{{- end -}}
+
+{{- define "bf" -}}
+    {{- $src := index $ 0 -}}
+    {{- $in := index $ 1 -}}
+
+    {{- /* initialize memory */ -}}
+    {{- $MemSize := 1024 -}}
+    {{- $mem := dict -}}
+    {{- range $i := until $MemSize -}}
+        {{- /* HACK: assign to dummy var to be evaluated as "" */ -}}
+        {{- /* HACK: use dict instead of list to access address in O(1) */ -}}
+        {{- $_ := set $mem (toString $i) 0 -}}
+    {{- end -}}
+
+    {{- /* initialize pointer address */ -}}
+    {{- $ptr := 0 -}}
+
+    {{- /* initialize parsing position */ -}}
+    {{- $tokPos := 0 -}}
+
+    {{- template "_bf" dict "src" $src "in" $in "mem" $mem "ptr" $ptr "tokPos" $tokPos -}}
+{{- end -}}
+
+{{- /* give source code and stdin */ -}}
+{{- template "bf" list `
+    +++++++++[>++++++++>+++++++++++>+++>+<<<<-]>.>++.+++++++..+++.
+    >+++++.<<+++++++++++++++.>.+++.------.--------.>+.>+.
+` "" -}}

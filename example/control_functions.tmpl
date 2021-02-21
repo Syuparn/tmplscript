@@ -9,5 +9,12 @@
 {{- default "no value found" $dict.c | println}}
 {{- default "no value found" $dict.c | println}}
 
+{{- /* search elements in nested map without nil pointer dereference: dig */ -}}
+{{- $d := dict "foo" (dict "bar" (dict "hoge" 1))}}
+{{- /* 1 */ -}}
+{{- dig "foo" "bar" "hoge" "not found..." $d | println}}
+{{- /* "not found..." */ -}}
+{{- dig "foo" "piyo" "hoge" "not found..." $d | println}}
+
 {{- /* raise exception: fail */ -}}
 {{- /* fail "exception raised!" */ -}}
