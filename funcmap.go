@@ -53,7 +53,7 @@ func docFunc(
 	return func(name string) string {
 		rt, ok := findElement(name, funcMap, builtInFuncMap)
 		if !ok {
-			return fmt.Sprintf("function %s is not defined (or embedded)", name)
+			return fmt.Sprintf("function %s is not defined", name)
 		}
 
 		if rt.Kind() != reflect.Func {

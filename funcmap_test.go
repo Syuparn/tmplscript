@@ -178,7 +178,7 @@ func TestDocFunc(t *testing.T) {
 			"not found",
 			map[string]interface{}{},
 			"myFunc",
-			"function myFunc is not defined (or embedded)",
+			"function myFunc is not defined",
 		},
 		{
 			"not function",
