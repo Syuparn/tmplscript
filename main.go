@@ -12,14 +12,20 @@ import (
 )
 
 var (
-	fileName   = flag.String("f", "", "use template file")
-	runsREPL   = flag.Bool("i", false, "run interactive REPL instead")
-	leftDelim  = flag.String("ldelim", "{{", "specify left deliminater")
-	rightDelim = flag.String("rdelim", "}}", "specify right deliminater")
+	fileName     = flag.String("f", "", "use template file")
+	runsREPL     = flag.Bool("i", false, "run interactive REPL instead")
+	showsVersion = flag.Bool("v", false, "show version")
+	leftDelim    = flag.String("ldelim", "{{", "specify left deliminater")
+	rightDelim   = flag.String("rdelim", "}}", "specify right deliminater")
 )
 
 func main() {
 	flag.Parse()
+
+	if *showsVersion {
+		fmt.Println(versionStr())
+		return
+	}
 
 	tmpl := newTemplate(*leftDelim, *rightDelim)
 
