@@ -9,8 +9,7 @@ builds:
     binary: tmplscript
     ldflags:
       - -s -w
-      - -X main.Version={{.Version}}
-      - -X main.Revision={{.ShortCommit}}
+      - -X main.version={{.Version}}
     env:
       - CGO_ENABLED=0
     goos:
