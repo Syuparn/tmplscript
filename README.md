@@ -1,5 +1,6 @@
 # tmplscript
 [![GoTest](https://github.com/Syuparn/tmplscript/actions/workflows/test.yml/badge.svg)](https://github.com/Syuparn/tmplscript/actions/workflows/test.yml)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 
 executable go-template command (like awk and jq!)
 
