@@ -9,6 +9,8 @@ import (
 	"os"
 	"strings"
 	"text/template"
+
+	"golang.org/x/xerrors"
 )
 
 var (
@@ -20,49 +22,53 @@ var (
 )
 
 func main() {
+	err := run()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%+v\n", err)
+		os.Exit(1)
+	}
+	os.Exit(0)
+}
+
+func run() error {
 	flag.Parse()
 
 	if *showsVersion {
 		fmt.Println(versionStr())
-		return
+		return nil
 	}
 
 	tmpl := newTemplate(*leftDelim, *rightDelim)
 
 	if *runsREPL {
-		runREPLMode(tmpl)
-		return
+		return runREPLMode(tmpl)
 	}
 
 	if *fileName != "" {
 		fp, err := os.Open(*fileName)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "failed to open %s: %v\n", *fileName, err)
-			return
+			return xerrors.Errorf("failed to open %s: %w", *fileName, err)
 		}
 
 		b, err := ioutil.ReadAll(fp)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "failed to read %s: %v\n", *fileName, err)
+			return xerrors.Errorf("failed to read %s: %w", *fileName, err)
 		}
 
-		runPipeMode(tmpl, string(b))
-		return
+		return runPipeMode(tmpl, string(b))
 	}
 
 	if flag.Arg(0) == "" {
-		fmt.Fprintf(os.Stderr, "template must be passed to argument\n")
-		return
+		return xerrors.Errorf("template must be passed to argument")
 	}
 
-	runPipeMode(tmpl, flag.Arg(0))
+	return runPipeMode(tmpl, flag.Arg(0))
 }
 
-func runPipeMode(tmplGen *template.Template, tmplStr string) {
+func runPipeMode(tmplGen *template.Template, tmplStr string) error {
 	tmpl, err := tmplGen.Parse(tmplStr)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "template error:\n%v\n", err)
-		return
+		return xerrors.Errorf("template error: %w", err)
 	}
 
 	scanner := bufio.NewScanner(os.Stdin)
@@ -71,13 +77,14 @@ func runPipeMode(tmplGen *template.Template, tmplStr string) {
 
 		err = tmpl.Execute(os.Stdout, line)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "runtime error:\n%v\n", err)
-			return
+			return xerrors.Errorf("runtime error: %w", err)
 		}
 	}
+
+	return nil
 }
 
-func runREPLMode(tmplGen *template.Template) {
+func runREPLMode(tmplGen *template.Template) error {
 	scanner := bufio.NewScanner(os.Stdin)
 	tmplStr := ""
 	lineNum := 1
@@ -88,7 +95,10 @@ func runREPLMode(tmplGen *template.Template) {
 
 		ok := scanner.Scan()
 		if !ok {
-			return
+			// end of repl
+			// HACK: prepend \n to break line even if repl is stopped by SIGINT
+			fmt.Println("\nBye.")
+			return nil
 		}
 
 		line := scanner.Text() + "\n"
