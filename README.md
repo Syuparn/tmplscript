@@ -41,6 +41,8 @@ Hello, world!
 tmpl:4> ^C
 ```
 
+In REPL mode, you can use histories and function autocompletes. See [peterh/liner](https://github.com/peterh/liner) for details.
+
 # functions
 
 Functions in [Sprig](http://masterminds.github.io/sprig/) are available.
