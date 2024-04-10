@@ -8,16 +8,16 @@ executable go-template command (like awk and jq!)
 
 Get binary [here](https://github.com/Syuparn/tmplscript/releases).
 
-You can also install from `go get`.
+You can also install from `go install`.
 
 ```bash
-$ go get -u github.com/syuparn/tmplscript
+$ go install github.com/syuparn/tmplscript@latest
 ```
 
 # usage
 
 ```bash
-$ go get -u github.com/syuparn/tmplscript
+$ go install github.com/syuparn/tmplscript@latest
 $ echo "hello" | tmplscript '{{print . ", " "world!"}}'
 hello, world!
 # read from file instead
