@@ -42,8 +42,7 @@ func TestSearchFunc(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
-		t.Run(fmt.Sprintf(tt.title), func(t *testing.T) {
+		t.Run(tt.title, func(t *testing.T) {
 			actual := searchFunc(tt.funcMap)(tt.key)
 
 			if len(actual) != len(tt.expected) {
@@ -124,8 +123,7 @@ func TestDocFunc(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		tt := tt
-		t.Run(fmt.Sprintf(tt.title), func(t *testing.T) {
+		t.Run(tt.title, func(t *testing.T) {
 			actual := docFunc(tt.funcMap)(tt.key)
 
 			if actual != tt.expected {
